@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>IGS</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <style type="text/css">
+    .required-field::before {
+      content: "*";
+      color: red;
+    }
+  </style>
+  <script type="text/javascript">
+    $(document).ready(function(){
+      // var technologies = [{
+      //   id: 1,
+      //   name: "Python"
+      // },
+      // {
+      //   id: 2,
+      //   name: "Dev Ops"
+      // },
+      // {
+      //   id: 3,
+      //   name: "Informatica"
+      // },
+      // {
+      //   id: 4,
+      //   name: "Snowflake"
+      // },
+      // {
+      //   id: 5,
+      //   name: "Oracle"
+      // },
+      // {
+      //   id: 6,
+      //   name: "Angular"
+      // },
+      // {
+      //   id: 7,
+      //   name: "ReactJS"
+      // },
+      // {
+      //   id: 8,
+      //   name: "DotNet"
+      // },
+      // {
+      //   id: 9,
+      //   name: "Java"
+      // },
+      // {
+      //   id: 10,
+      //   name: "SQL"
+      // }];
+
+      var technologies = [];
+
+      $.ajax({
+        url: "http://127.0.0.1:8000/api/techs/",
+        type: 'GET',
+        headers: {
+              "accept": "application/json",
+              // "Access-Control-Allow-Origin":"*"
+        },
+        // dataType: 'json', // added data type
+        success: function(res) {
+            console.log(res);
+            alert(res);
+            technologies = res;
+
+            for (var i = 0; i < technologies.length; i++) {
+              $("#divSelectTechnologies").append(
+                '<div class="form-check"> ' +
+                    '<input class="form-check-input cb-technology" type="checkbox" value="" id="cbTechnology_' + technologies[i].TechnologyId.toString() + '"> ' +
+                    '<label class="form-check-label" for="cbTechnology_' + technologies[i].TechnologyId.toString() + '"> ' +
+                    technologies[i].TechnologyName +
+                    '</label> ' +
+                  '</div>'
+              );
+            }
+        }
+    });
+
+      // for (var i = 0; i < technologies.length; i++) {
+      //   $("#divSelectTechnologies").append(
+      //     '<div class="form-check"> ' +
+      //         '<input class="form-check-input cb-technology" type="checkbox" value="" id="cbTechnology_' + technologies[i].id.toString() + '"> ' +
+      //         '<label class="form-check-label" for="cbTechnology_' + technologies[i].id.toString() + '"> ' +
+      //         technologies[i].name +
+      //         '</label> ' +
+      //       '</div>'
+      //   );
+      // }
+    });
+
+    function submit() {
+      var selectedCBs = $('.cb-technology').attr('checked');
+      var selectedTechnologies = [];
+      $(".cb-technology:checkbox:checked").each(function() {
+        selectedTechnologies.push(parseInt($(this).attr("id").split('_')[1]));
+      });
+      console.log(selectedTechnologies);
+      var name = $('#name').val();
+      var number = $('#number').val();
+      var email = $('#email').val();
+      var details = $('#details').val();
+      var isProjectStarted = $('#cbProjectStarted').attr('checked');
+      var selectedCBLength = $(".cb-technology:checkbox:checked").length;
+      if (name == null || name == '' || number == null || number == ''
+        || email == null || email == '' || details == null || details == ''
+        || selectedCBLength == 0) {
+        var error = 'Please enter / select mandatory fields </br>';
+        if (name == null || name == '') {
+          error += 'Name </br>';
+        }
+        if (number == null || number == '') {
+          error += 'Mobile number </br>';
+        }
+        if (email == null || email == '') {
+          error += 'Email address </br>';
+        }
+        if (details == null || details == '') {
+          error += 'Project details </br>';
+        }
+        if (selectedCBLength == 0) {
+          error += 'Technology </br>';
+        }
+        $('#divError').css('display', 'block');
+        $('#divErrorInfo').html(error);
+      } else {
+        var postData = {
+          "CustomerName": name,
+          "EmailId": email,
+          "MobileNumber": number,
+          "Description": details,
+          "isProjectStarted": isProjectStarted,
+          "Technologies": selectedTechnologies
+        };
+       
+        $.ajax({
+            type: "POST",
+            url: "http://127.0.0.1:8000/api/create-customer/",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(postData),
+            success: function (result, status, xhr) {
+                $('#divSuccess').css('display', 'block');
+            },
+            error: function (xhr, status, error) {
+                $('#divError').css('display', 'block');
+                $('#divErrorInfo').html("Result: " + status + " " + error + " " + xhr.status + " " + xhr.statusText);
+            }
+        });
+      }
+    }
+
+    function cancel() {
+
+    }
+
+    function closePopup() {
+      $('.alert').each(function() {
+        $(this).css('display', 'none');
+      });
+    }
+  </script>
+</head>
+<body>
+  <div class="container" style="width: 700px;">
+    <div class="form-group row">
+      <div class="mb-3">
+        <div class="row">
+          <div class="col-md-9"><h1>About your project</h1></div>
+          <div class="col-md-3"><!-- Logo --></div>
+        </div>
+      </div>
+    </div>
+    <div class="form-group row">
+      <div class="mb-3">
+        <label for="name" class="form-label">Name <span class="required-field"></span></label>
+        <input type="text" class="form-control" id="name" placeholder="Enter your name">
+      </div>
+    </div>
+    <div class="form-group row">
+      <div class="mb-3">
+        <label for="number" class="form-label">Mobile Number <span class="required-field"></span></label>
+        <input type="text" class="form-control" id="number" placeholder="Enter your mobile number with country code">
+      </div>
+    </div>
+    <div class="form-group row">
+      <div class="mb-3">
+        <label for="email" class="form-label">Email address <span class="required-field"></span></label>
+        <input type="email" class="form-control" id="email" placeholder="Enter your email address">
+      </div>
+    </div>
+    <div class="form-group row">
+      <label for="email" class="form-label">Select your technologies <span class="required-field"></span></label>
+      <div class="mb-3" style="height: 100px; overflow-y: auto;" id="divSelectTechnologies">
+
+      </div>
+    </div>
+    <div class="form-group row">
+      <div class="mb-3">
+        <label for="details" class="form-label">Details of your project <span class="required-field"></span></label>
+        <textarea class="form-control" id="details" rows="3"></textarea>
+      </div>
+    </div>
+    <div class="form-group row">
+      <div class="mb-3">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" value="" id="cbProjectStarted">
+          <label class="form-check-label" for="cbProjectStarted">
+            Is project started?
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+      <button class="btn btn-primary me-md-2" onClick="submit();" type="button">Submit</button>
+      <button class="btn btn-primary" type="button" onClick="cancel();">Cancel</button>
+    </div>
+    <!-- Success Alert -->
+    <div id="divSuccess" class="alert alert-success alert-dismissible fade show" role="alert" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 50%;">
+      <strong>Successfully submitted!</strong>
+      <button type="button" class="btn-close" onClick="closePopup();"></button>
+    </div>
+    <!-- Error Alert -->
+    <div id="divError" class="alert alert-danger alert-dismissible fade show" role="alert" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 50%;">
+      <strong>Error!</strong>
+      <div id="divErrorInfo"></div>
+      <button type="button" class="btn-close" onClick="closePopup();"></button>
+    </div>
+  </div>
+</body>
+</html>
